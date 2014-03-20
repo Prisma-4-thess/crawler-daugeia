@@ -9,7 +9,7 @@ try:
   #                             host='83.212.109.124',charset='utf8',
   #                             database='******')
 
-  cnx = mysql.connector.connect(user='******', password='***********',
+  cnx = mysql.connector.connect(user='*******', password='***********',
                               host='localhost',charset='utf8',
                               database='******')
 
@@ -35,10 +35,14 @@ try:
   # # di.malakesDi(csr)
   # # cnx.commit()
   print("decision")
-  di.addDecisionsCorrect(csr,'decisions.xml')
+  # di.addDecisionsCorrect(csr,'decisions.xml')
+  # di.getDecisionsUptodate(6114)
+  # di.getTotalNumberOfDecisions(csr,6114)
+  # cnx.commit()
+  di.getDecisionsUptodate(50205)
+  di.getTotalNumberOfDecisions(cnx,csr,50205)
   # print("geo")
   # di.getGEO(csr)
-  cnx.commit()
   csr.close()
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:

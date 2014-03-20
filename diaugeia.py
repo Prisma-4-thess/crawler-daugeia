@@ -308,21 +308,18 @@ def addDecisionsCorrect(csr,mfile):
       "(version,ada,date,document_url,protocol_number,signer_id,subject,type_id,unit_id,url,decision_to_correct_id)"
       "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
-  stat_url = 'http://83.212.109.124:80/Prisma/pdf/'
+  # stat_url = 'http://83.212.109.124:80/Prisma/pdf/'
   tree = ET.ElementTree(file=mfile)
   root = tree.getroot()
   child = root[0]
   i=0;
   for decision in child:
-    i=i+1;
-    if i==111:
-      break
     ada = decision[0].text
     print (ada)
     meta = decision[2]
     url = decision[3].text
-    # doc_url = decision[4].text
-    doc_url = stat_url+ada+'.pdf'
+    doc_url = decision[4].text
+    # doc_url = stat_url+ada+'.pdf'
     # Add static meta
     protocol_number = meta[0].text
     date = meta[1].text
@@ -404,7 +401,7 @@ def addRelative(csr,dec_id,rada):
 def getXML(request):
   # request = request.decode('iso-8859-7')
   print (request)
-  url = u'http://opendata.diavgeia.gov.gr/api/decisions?ada='+request
+  url = u'http://opendata.diavgeia.gov.gr/api/decisions?ada='+request.replace(' ', '')
   url = iriToUri(url)
   print (url)
   opener = urllib2.build_opener()
@@ -493,6 +490,54 @@ def dlPDF(ada):
 #         print (str(e))
 
 #____KML crawler_______
+
+def getDecisionsUptodate(org):
+  init = "http://opendata.diavgeia.gov.gr/api/decisions?org="+str(org)+"&count=1"
+  theurl = "http://opendata.diavgeia.gov.gr/api/decisions?org="+str(org)+"&count=500&from="
+  opener = urllib2.build_opener()
+  opener.addheaders = [
+  ('Accept','*/*'),
+  ('Connection','Keep-Alive'),
+  ('Content-type','text/xml')
+  ]
+  
+  # print("... Sending HTTP GET to %s" % theurl)
+  f = opener.open(init)
+  data = f.read()
+  f.close()
+  opener.close()
+  FILE = open("temporary.xml", "w")
+  FILE.write(data)
+  FILE.close()
+
+def getTotalNumberOfDecisions(cnx,csr,org):
+  tree = ET.ElementTree(file="temporary.xml")
+  root = tree.getroot()
+  child = root[1]
+  totalNum = child[3]
+  steps = int(float(totalNum.text)) / 500
+  for x in range(0,steps+1):
+    theurl = "http://opendata.diavgeia.gov.gr/api/decisions?org="+str(org)+"&count=500&from="+str(x*500+1)
+    print (theurl)
+    opener = urllib2.build_opener()
+    opener.addheaders = [
+    ('Accept','*/*'),
+    ('Connection','Keep-Alive'),
+    ('Content-type','text/xml')
+    ]
+    # print("... Sending HTTP GET to %s" % theurl)
+    f = opener.open(theurl)
+    data = f.read()
+    f.close()
+    opener.close()
+    FILE = open("decisions_to_update.xml", "w")
+    FILE.write(data)
+    FILE.close()
+    addDecisionsCorrect(csr,"decisions_to_update.xml")
+    cnx.commit()
+
+
+
 def getGEO(csr):
   query = (
      "INSERT INTO geo"

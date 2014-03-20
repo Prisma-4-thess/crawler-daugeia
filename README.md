@@ -3,4 +3,6 @@ Crawler for Diaugeia
 Python crawler
 -------
 
-Still in demo mode, doesn't update decision or dictionaries, uses static.
+- Still in demo mode 
+- Doesn't update decisions or dictionaries
+- Static database loading
